@@ -87,10 +87,11 @@ impl NostrBridge {
                         }
                         RelayPoolNotification::Message { relay_url, message } => {
                             if let RelayMessage::Auth { challenge } = message {
+                                let preview: String = challenge.chars().take(16).collect();
                                 info!(
                                     "NIP-42 AUTH challenge from {} (challenge={}…)",
                                     relay_url,
-                                    &challenge[..challenge.len().min(16)]
+                                    preview
                                 );
                             }
                         }
