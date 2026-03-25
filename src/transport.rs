@@ -6,13 +6,12 @@ use std::task::{Context, Poll};
 use std::time::Duration;
 
 use async_wsocket::futures_util::stream::SplitSink;
-use async_wsocket::futures_util::{Sink, TryStreamExt};
-use async_wsocket::{ConnectionMode, Message as AsyncWsMessage, WebSocket};
+use async_wsocket::futures_util::{Sink, StreamExt, TryStreamExt};
+use async_wsocket::{ConnectionMode, Message, WebSocket};
 use nostr::util::BoxedFuture;
 use nostr::Url;
-use nostr_relay_pool::transport::websocket::{
-    TransportError, WebSocketSink, WebSocketStream, WebSocketTransport,
-};
+use nostr_relay_pool::transport::error::TransportError;
+use nostr_relay_pool::transport::websocket::{WebSocketSink, WebSocketStream, WebSocketTransport};
 use tokio_tungstenite::tungstenite::client::IntoClientRequest;
 use tokio_tungstenite::tungstenite::http::HeaderValue;
 
@@ -20,7 +19,7 @@ const USER_AGENT: &str = concat!("rs_tg_nostr/", env!("CARGO_PKG_VERSION"));
 
 // Newtype wrapper around SplitSink — do NOT replace with sink_map_err,
 // as that can cause panics (see rust-nostr issue #984).
-struct OurSink(SplitSink<WebSocket, AsyncWsMessage>);
+struct OurSink(SplitSink<WebSocket, Message>);
 
 impl fmt::Debug for OurSink {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -28,7 +27,7 @@ impl fmt::Debug for OurSink {
     }
 }
 
-impl Sink<AsyncWsMessage> for OurSink {
+impl Sink<Message> for OurSink {
     type Error = TransportError;
 
     fn poll_ready(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
@@ -37,7 +36,7 @@ impl Sink<AsyncWsMessage> for OurSink {
             .map_err(TransportError::backend)
     }
 
-    fn start_send(mut self: Pin<&mut Self>, item: AsyncWsMessage) -> Result<(), Self::Error> {
+    fn start_send(mut self: Pin<&mut Self>, item: Message) -> Result<(), Self::Error> {
         Pin::new(&mut self.0)
             .start_send(item)
             .map_err(TransportError::backend)

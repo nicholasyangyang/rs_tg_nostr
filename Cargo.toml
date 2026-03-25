@@ -9,6 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 nostr-sdk = { version = "0.44.1", features = ["nip59"] }
+nostr = "0.44"
 nostr-relay-pool  = "0.44.0"
 tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
 async-wsocket     = "0.13"

@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use nostr_sdk::{Client, Filter, Kind, PublicKey, RelayMessage, RelayPoolNotification, Timestamp};
+use crate::transport::UserAgentTransport;
 use tracing::{info, warn};
 
 use crate::error::AppError;
@@ -16,7 +17,10 @@ pub struct NostrBridge {
 impl NostrBridge {
     pub async fn connect(keys: &KeyStore, relays: &[String]) -> Result<Self, AppError> {
         let nostr_keys = keys.nostr_keys()?;
-        let client = Client::new(nostr_keys);
+        let client = Client::builder()
+            .signer(nostr_keys)
+            .websocket_transport(UserAgentTransport)
+            .build();
 
         for relay in relays {
             client
@@ -42,30 +46,24 @@ impl NostrBridge {
             .since(since);
 
         self.client
-            .subscribe(vec![filter], None)
+            .subscribe(filter, None)
             .await
             .map_err(|e| AppError::Nostr(e.to_string()))?;
 
         info!("Nostr listener subscribed for pubkey={}", my_pubkey);
 
+        let client = self.client.clone();
         self.client
             .handle_notifications(|notification| {
                 let state = state.clone();
+                let client = client.clone();
                 async move {
                     match notification {
                         RelayPoolNotification::Event { event, .. } => {
                             if event.kind == Kind::GiftWrap {
-                                let keys = match state.keys.nostr_keys() {
-                                    Ok(k) => k,
-                                    Err(e) => {
-                                        warn!("Failed to get keys: {}", e);
-                                        return Ok(false);
-                                    }
-                                };
-                                // NIP-59 gift wrap 解包，使用 async extract_rumor
-                                match nostr_sdk::nips::nip59::extract_rumor(&keys, &event).await {
-                                    Ok(unwrapped) => {
-                                        let content = unwrapped.rumor.content.clone();
+                                match client.unwrap_gift_wrap(&event).await {
+                                    Ok(gift) => {
+                                        let content = gift.rumor.content.clone();
                                         match state.get_chat_id() {
                                             Some(chat_id) => {
                                                 if let Err(e) =
