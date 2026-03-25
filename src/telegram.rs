@@ -66,12 +66,14 @@ impl TgSender for TelegramClient {
 
 #[derive(Debug, Deserialize)]
 pub struct TgUpdate {
+    #[allow(dead_code)]
     pub update_id: i64,
     pub message: Option<TgMessage>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct TgMessage {
+    #[allow(dead_code)]
     pub message_id: i64,
     #[serde(rename = "from")]
     pub from_user: Option<TgUser>,

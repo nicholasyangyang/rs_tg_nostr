@@ -9,6 +9,7 @@ pub struct Config {
     pub port: u16,
     pub msg_to: String,
     pub nostr_relays: Vec<String>,
+    #[allow(dead_code)]
     pub log_level: String,
 }
 

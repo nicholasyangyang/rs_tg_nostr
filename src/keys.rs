@@ -13,6 +13,7 @@ pub struct KeyPair {
 }
 
 pub struct KeyStore {
+    #[allow(dead_code)]
     path: PathBuf,
     keys: RwLock<KeyPair>,
 }
