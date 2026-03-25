@@ -8,7 +8,10 @@ name = "rs_tg_nostr"
 path = "src/main.rs"
 
 [dependencies]
-nostr-sdk = { version = "0.38", features = ["nip59"] }
+nostr-sdk = { version = "0.44.1", features = ["nip59"] }
+nostr-relay-pool  = "0.44.0"
+tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
+async-wsocket     = "0.13"
 axum = { version = "0.8", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
