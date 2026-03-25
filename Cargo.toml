@@ -8,7 +8,7 @@ name = "rs_tg_nostr"
 path = "src/main.rs"
 
 [dependencies]
-nostr-sdk = "0.38"
+nostr-sdk = { version = "0.38", features = ["nip59"] }
 axum = { version = "0.8", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
