@@ -17,7 +17,7 @@ nostr-sdk 0.38 默认启用 NIP-42 自动认证（`nip42_auto_authentication: tr
 
 ```rust
 RelayPoolNotification::Message { relay_url, message } => {
-    if let RelayMessage::Auth { challenge } = *message {
+    if let RelayMessage::Auth { challenge } = message {
         info!(
             "NIP-42 AUTH challenge from {} (challenge={}…)",
             relay_url,
