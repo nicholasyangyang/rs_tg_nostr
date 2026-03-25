@@ -25,8 +25,14 @@ struct Cli {
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
+    // Load .env before tracing init so LOG_LEVEL from .env takes effect.
+    let _ = dotenvy::dotenv();
+
     fmt()
-        .with_env_filter(EnvFilter::from_default_env())
+        .with_env_filter(
+            EnvFilter::try_from_env("LOG_LEVEL")
+                .unwrap_or_else(|_| EnvFilter::from_default_env()),
+        )
         .init();
 
     std::fs::create_dir_all(&cli.cwd_dir)?;

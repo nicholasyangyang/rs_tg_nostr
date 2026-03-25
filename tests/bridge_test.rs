@@ -66,7 +66,6 @@ fn make_test_state(nostr: MockNostr, tg: MockTg) -> (Arc<AppState>, TempDir) {
         port: 8000,
         msg_to: "npub1target".into(),
         nostr_relays: vec![],
-        log_level: "info".into(),
     });
     let state = Arc::new(AppState::new(keys, Arc::new(nostr), Arc::new(tg), config));
     (state, dir)

@@ -9,8 +9,6 @@ pub struct Config {
     pub port: u16,
     pub msg_to: String,
     pub nostr_relays: Vec<String>,
-    #[allow(dead_code)]
-    pub log_level: String,
 }
 
 impl Config {
@@ -35,8 +33,6 @@ impl Config {
             .split(',')
             .map(|s| s.trim().to_string())
             .collect();
-        let log_level = std::env::var("LOG_LEVEL").unwrap_or_else(|_| "info".into());
-
         Ok(Self {
             bot_token,
             webhook_url,
@@ -44,7 +40,6 @@ impl Config {
             port,
             msg_to,
             nostr_relays,
-            log_level,
         })
     }
 }

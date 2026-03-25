@@ -13,10 +13,7 @@ use crate::state::AppState;
 use crate::telegram::{TelegramClient, webhook_router};
 
 pub async fn run(cwd_dir: PathBuf) -> Result<()> {
-    // 1. 加载 .env（忽略文件不存在）
-    let _ = dotenvy::dotenv();
-
-    // 2. 读取配置
+    // 1. 读取配置
     let config = Arc::new(Config::from_env().context("failed to load config")?);
 
     // 3. 加载或生成密钥

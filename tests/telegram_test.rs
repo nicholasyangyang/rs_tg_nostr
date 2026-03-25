@@ -59,7 +59,6 @@ async fn test_webhook_allowed_user_sends_dm() {
         port: 8000,
         msg_to: "npub1test".to_string(),
         nostr_relays: vec![],
-        log_level: "info".into(),
     });
     let state = Arc::new(AppState::new(keys, Arc::new(nostr), Arc::new(tg), config));
     let app = webhook_router(state);
@@ -102,7 +101,6 @@ async fn test_webhook_blocked_user_returns_ok_no_dm() {
         port: 8000,
         msg_to: "npub1test".to_string(),
         nostr_relays: vec![],
-        log_level: "info".into(),
     });
     let state = Arc::new(AppState::new(keys, Arc::new(nostr), Arc::new(tg), config));
     let app = webhook_router(state);
@@ -141,7 +139,6 @@ async fn test_webhook_no_text_returns_ok() {
         port: 8000,
         msg_to: "npub1test".to_string(),
         nostr_relays: vec![],
-        log_level: "info".into(),
     });
     let state = Arc::new(AppState::new(keys, Arc::new(nostr), Arc::new(tg), config));
     let app = webhook_router(state);
