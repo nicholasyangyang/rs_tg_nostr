@@ -2,7 +2,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use nostr_sdk::{Client, Filter, Kind, PublicKey, RelayPoolNotification, Timestamp};
+use nostr_sdk::{Client, Filter, Kind, PublicKey, RelayMessage, RelayPoolNotification, Timestamp};
 use tracing::{info, warn};
 
 use crate::error::AppError;
@@ -52,37 +52,49 @@ impl NostrBridge {
             .handle_notifications(|notification| {
                 let state = state.clone();
                 async move {
-                    if let RelayPoolNotification::Event { event, .. } = notification {
-                        if event.kind == Kind::GiftWrap {
-                            let keys = match state.keys.nostr_keys() {
-                                Ok(k) => k,
-                                Err(e) => {
-                                    warn!("Failed to get keys: {}", e);
-                                    return Ok(false);
-                                }
-                            };
-                            // NIP-59 gift wrap 解包，使用 async extract_rumor
-                            match nostr_sdk::nips::nip59::extract_rumor(&keys, &event).await {
-                                Ok(unwrapped) => {
-                                    let content = unwrapped.rumor.content.clone();
-                                    match state.get_chat_id() {
-                                        Some(chat_id) => {
-                                            if let Err(e) =
-                                                state.tg.send_message(chat_id, &content).await
-                                            {
-                                                warn!("Failed to forward to TG: {}", e);
+                    match notification {
+                        RelayPoolNotification::Event { event, .. } => {
+                            if event.kind == Kind::GiftWrap {
+                                let keys = match state.keys.nostr_keys() {
+                                    Ok(k) => k,
+                                    Err(e) => {
+                                        warn!("Failed to get keys: {}", e);
+                                        return Ok(false);
+                                    }
+                                };
+                                // NIP-59 gift wrap 解包，使用 async extract_rumor
+                                match nostr_sdk::nips::nip59::extract_rumor(&keys, &event).await {
+                                    Ok(unwrapped) => {
+                                        let content = unwrapped.rumor.content.clone();
+                                        match state.get_chat_id() {
+                                            Some(chat_id) => {
+                                                if let Err(e) =
+                                                    state.tg.send_message(chat_id, &content).await
+                                                {
+                                                    warn!("Failed to forward to TG: {}", e);
+                                                }
+                                            }
+                                            None => {
+                                                warn!("No chat_id yet, dropping Nostr DM");
                                             }
                                         }
-                                        None => {
-                                            warn!("No chat_id yet, dropping Nostr DM");
-                                        }
                                     }
-                                }
-                                Err(e) => {
-                                    warn!("Failed to unwrap NIP-17: {}", e);
+                                    Err(e) => {
+                                        warn!("Failed to unwrap NIP-17: {}", e);
+                                    }
                                 }
                             }
                         }
+                        RelayPoolNotification::Message { relay_url, message } => {
+                            if let RelayMessage::Auth { challenge } = message {
+                                info!(
+                                    "NIP-42 AUTH challenge from {} (challenge={}…)",
+                                    relay_url,
+                                    &challenge[..challenge.len().min(16)]
+                                );
+                            }
+                        }
+                        _ => {}
                     }
                     Ok(false)
                 }
