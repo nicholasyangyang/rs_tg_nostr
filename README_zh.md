@@ -16,7 +16,7 @@
 
 - Rust 1.85+（edition 2024）
 - Telegram Bot token（向 @BotFather 申请）
-- 可被 Telegram 访问的 HTTPS 端点（TLS 由 nginx/caddy 等反向代理终止，程序本身监听 HTTP）
+- 可被 Telegram 访问的 HTTPS 端点——可以是真实域名 + 反向代理，也可以用 `cloudflared` 快速本地测试（见下文）
 
 ## 配置
 
@@ -56,6 +56,28 @@ RUST_LOG=debug ./target/release/rs_tg_nostr --cwd-dir ~/bot-data/
 ```
 
 首次运行时，程序会自动生成 Nostr 密钥对并写入 `<cwd-dir>/key.json`，同时调用 Telegram `setWebhook` 完成 webhook 注册。
+
+### 通过 cloudflared 快速获取本地 HTTPS
+
+如果没有公网域名，可以用 [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) 临时获取一个 HTTPS 地址：
+
+```bash
+# 1. 启动隧道（保持此终端窗口开启）
+cloudflared tunnel --url http://localhost:8000
+```
+
+启动后会输出一个类似 `https://abcd-1234.trycloudflare.com` 的地址，将其填入 `.env`：
+
+```env
+WEBHOOK_URL=https://abcd-1234.trycloudflare.com
+```
+
+```bash
+# 2. 在另一个终端启动主程序
+./target/release/rs_tg_nostr --cwd-dir ~/bot-data/
+```
+
+> **注意：** cloudflared 每次重启都会分配新的 URL，需要同步更新 `.env` 中的 `WEBHOOK_URL`。
 
 ## 密钥文件
 

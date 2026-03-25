@@ -16,7 +16,7 @@ A Telegram ↔ Nostr message bridge written in Rust. Receives Telegram messages 
 
 - Rust 1.85+ (edition 2024)
 - A Telegram Bot token (`@BotFather`)
-- An HTTPS endpoint for the Telegram webhook (nginx/caddy handles TLS; the binary listens plain HTTP)
+- An HTTPS endpoint for the Telegram webhook — either a real domain with TLS, or `cloudflared` for quick local testing (see below)
 
 ## Configuration
 
@@ -56,6 +56,28 @@ RUST_LOG=debug ./target/release/rs_tg_nostr --cwd-dir ~/bot-data/
 ```
 
 On first run, a Nostr keypair is generated and saved to `<cwd-dir>/key.json`. The binary also calls Telegram's `setWebhook` to register the webhook URL automatically.
+
+### Quick local HTTPS via cloudflared
+
+If you don't have a public domain, use [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) to get a temporary HTTPS URL:
+
+```bash
+# 1. Start the tunnel (keep this terminal open)
+cloudflared tunnel --url http://localhost:8000
+```
+
+The output will print a URL like `https://abcd-1234.trycloudflare.com`. Copy it and set it in `.env`:
+
+```env
+WEBHOOK_URL=https://abcd-1234.trycloudflare.com
+```
+
+```bash
+# 2. Start the bot (in a separate terminal)
+./target/release/rs_tg_nostr --cwd-dir ~/bot-data/
+```
+
+> **Note:** The cloudflared URL changes every time you restart the tunnel. Update `WEBHOOK_URL` in `.env` accordingly.
 
 ## Key File
 
