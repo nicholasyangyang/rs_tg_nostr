@@ -53,12 +53,17 @@ impl TgSender for TelegramClient {
             "https://api.telegram.org/bot{}/sendMessage",
             self.bot_token
         );
-        self.http
+        let resp = self
+            .http
             .post(&url)
             .json(&serde_json::json!({ "chat_id": chat_id, "text": text }))
             .send()
             .await
             .map_err(|e| AppError::Telegram(e.to_string()))?;
+        if !resp.status().is_success() {
+            let body = resp.text().await.unwrap_or_default();
+            return Err(AppError::Telegram(format!("sendMessage failed: {body}")));
+        }
         info!("Sent TG message to chat_id={}", chat_id);
         Ok(())
     }

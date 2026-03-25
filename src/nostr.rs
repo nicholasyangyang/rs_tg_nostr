@@ -33,10 +33,13 @@ impl NostrBridge {
     pub async fn listen(self: Arc<Self>, state: Arc<AppState>) -> Result<(), AppError> {
         let my_pubkey = state.keys.nostr_keys()?.public_key();
 
+        // NIP-59 gift wrap events have intentionally backdated created_at (up to 48h in the
+        // past) to prevent timing correlation. Using since(now) would drop all incoming DMs.
+        let since = Timestamp::now() - 2 * 24 * 60 * 60;
         let filter = Filter::new()
             .kind(Kind::GiftWrap)
             .pubkey(my_pubkey)
-            .since(Timestamp::now());
+            .since(since);
 
         self.client
             .subscribe(vec![filter], None)
