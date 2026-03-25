@@ -6,7 +6,7 @@ use std::task::{Context, Poll};
 use std::time::Duration;
 
 use async_wsocket::futures_util::stream::SplitSink;
-use async_wsocket::futures_util::{Sink, StreamExt};
+use async_wsocket::futures_util::{Sink, TryStreamExt};
 use async_wsocket::{ConnectionMode, Message as AsyncWsMessage, WebSocket};
 use nostr::util::BoxedFuture;
 use nostr::Url;
