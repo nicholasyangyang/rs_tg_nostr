@@ -5,6 +5,7 @@ use clap::Parser;
 use tracing_subscriber::{EnvFilter, fmt};
 
 mod error;
+mod transport;
 mod config;
 mod keys;
 mod state;
