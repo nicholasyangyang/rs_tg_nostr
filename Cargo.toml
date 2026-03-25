@@ -3,4 +3,26 @@ name = "rs_tg_nostr"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "rs_tg_nostr"
+path = "src/main.rs"
+
 [dependencies]
+nostr-sdk = "0.38"
+axum = { version = "0.8", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+dotenvy = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+thiserror = "2"
+anyhow = "1"
+async-trait = "0.1"
+tempfile = "3"
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+axum-test = "19"
+tokio = { version = "1", features = ["full"] }
